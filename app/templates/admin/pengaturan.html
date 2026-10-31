@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, csrf, field %}
+{% block title %}Pengaturan{% endblock %}
+{% block main_class %}container narrow{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Pengaturan presensi</h1><p>Jadwal dan aturan ini dipakai server untuk menerima atau menolak presensi mandiri siswa.</p></div></div>
+
+{% if errors %}
+<div class="alert alert-error mb-1" role="alert">{{ icon('alert', 18) }}<div><strong>Pengaturan belum disimpan:</strong><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div></div>
+{% endif %}
+
+<form method="post" action="{{ url_for('admin.settings') }}">
+  {{ csrf() }}
+  <section class="card" aria-labelledby="jadwal">
+    <h2 id="jadwal">Jadwal sesi presensi</h2>
+    <p class="muted small">Isi jam buka dan jam tutup (WIB) untuk hari yang ada presensinya. Kosongkan hari libur. Selama jadwal belum diisi, siswa belum bisa mengirim presensi mandiri (namun admin tetap dapat mengisi/mengedit presensi kapan saja).</p>
+    <table class="sched">
+      <thead><tr><th>Hari</th><th>Buka</th><th>Tutup</th></tr></thead>
+      <tbody>
+      {% for i in range(7) %}
+      <tr><th scope="row">{{ ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'][i] }}</th>
+        <td><input class="input" type="time" id="sched_{{ i }}_open" name="sched_{{ i }}_open" value="{{ s['sched_%d_open' % i] }}" aria-label="Jam buka {{ ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'][i] }}"></td>
+        <td><input class="input" type="time" id="sched_{{ i }}_close" name="sched_{{ i }}_close" value="{{ s['sched_%d_close' % i] }}" aria-label="Jam tutup {{ ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'][i] }}"></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="mt-075 mb-0"><button class="btn btn-secondary btn-sm" type="button" data-copy-monday>Samakan Selasa–Jumat dengan Senin</button></p>
+  </section>
+
+  <section class="card" aria-labelledby="lokasi">
+    <h2 id="lokasi">Verifikasi lokasi siswa (opsional)</h2>
+    <p class="muted small">Bila aktif, presensi mandiri <strong>Hadir</strong> dari akun siswa hanya diterima jika perangkat berada dalam radius dari titik sekolah.</p>
+    <label class="check mb-1"><input type="checkbox" name="geo_enabled" value="1" {% if s.geo_enabled == '1' %}checked{% endif %}><span>Aktifkan verifikasi lokasi untuk presensi Hadir siswa</span></label>
+    <div class="grid-2">
+      {{ field('geo_lat', 'Latitude sekolah', s.geo_lat, type='text', inputmode='decimal', help='Contoh format: -6.123456. Ambil dari peta atau GPS di gerbang sekolah.') }}
+      {{ field('geo_lng', 'Longitude sekolah', s.geo_lng, type='text', inputmode='decimal', help='Contoh format: 106.123456.') }}
+    </div>
+    {{ field('geo_radius', 'Radius (meter)', s.geo_radius, type='text', inputmode='numeric', help='10–5000 meter. Beri toleransi yang wajar untuk akurasi sinyal di dalam kelas.') }}
+  </section>
+
+  <section class="card" aria-labelledby="kelas">
+    <h2 id="kelas">Informasi kelas</h2>
+    {{ field('academic_year', 'Tahun ajaran (opsional)', year, type='text', maxlength=9, help='Format 2026/2027. Dicetak pada laporan bila diisi.') }}
+  </section>
+
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Simpan pengaturan</button></div>
+</form>
+{% endblock %}

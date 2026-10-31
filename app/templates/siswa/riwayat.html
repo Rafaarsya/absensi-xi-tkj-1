@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge, month_nav %}
+{% block title %}Riwayat presensi{% endblock %}
+{% block main_class %}container narrow{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Riwayat presensi</h1>{{ month_nav(prev, next, label, 'student.riwayat') }}</div>
+<section class="card" aria-label="Rekap bulan {{ label }}">
+  <div class="tiles">
+    {% for k in STATUS_ORDER %}<div class="tile {{ k|lower }}"><b>{{ summary.counts[k] }}</b><span>{{ STATUS_LABELS[k] }}</span></div>{% endfor %}
+  </div>
+  <p class="muted small m-0">{{ summary.effective_days }} hari efektif{% if summary.pct is not none %} · kehadiran {{ summary.pct }}%{% endif %}{% if summary.belum %} · {{ summary.belum }} hari belum tercatat{% endif %}</p>
+</section>
+<section class="card">
+  {% if history %}
+  <ul class="history-list">
+    {% for r in history %}
+    <li><span class="when">{{ r['att_date']|tgl }}</span><span>{{ badge(r['status']) }}{% if r['corrected'] %}<span class="tag">dikoreksi admin</span>{% endif %}</span>
+      <span class="meta">{{ r['submitted_at']|jam }} WIB{% if r['source'] in ('admin', 'guru') %} · dicatat admin{% endif %}{% if r['note'] %} · {{ r['note'] }}{% endif %}</span></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty"><strong>Belum ada presensi di {{ label }}</strong>Data akan muncul setelah Anda mengirim presensi.</div>
+  {% endif %}
+</section>
+{% endblock %}

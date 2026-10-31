@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge %}
+{% block title %}Beranda{% endblock %}
+{% block main_class %}container narrow{% endblock %}
+{% block content %}
+<section class="card today-card" aria-labelledby="hi">
+  <div class="today-top">
+    <div>
+      <h1 id="hi">Halo, {{ current_user['full_name'] }}</h1>
+      <p class="muted mt-015 mb-0">Kelas {{ klass.name }}{% if profile and profile['roll_no'] %} · No. absen {{ profile['roll_no'] }}{% endif %}</p>
+    </div>
+    <span class="today-date">{{ icon('calendar', 16) }}{{ today|tgl }}</span>
+  </div>
+
+  {% if record %}
+  <div class="today-status">
+    <span class="big {{ record['status']|lower }}">{{ STATUS_LABELS[record['status']] }}</span>
+    <span class="badge badge-ok">Sudah tercatat</span>
+  </div>
+  <p class="muted m-0">Dicatat pukul {{ record['submitted_at']|jam }} WIB{% if record['source'] in ('admin', 'guru') %} oleh admin kelas{% endif %}.
+    {% if record['note'] %}Keterangan: {{ record['note'] }}{% endif %}</p>
+  {% else %}
+  <div class="today-status">
+    <span class="big n">Belum presensi</span>
+  </div>
+  <div class="window-line">
+    <span class="window-msg">{{ icon('clock', 16) }}<span>{{ window.message }}</span></span>
+    {% if window.state == 'open' %}<span>Sisa <span class="countdown" data-countdown="{{ window.seconds_left }}" aria-label="sisa waktu">--:--</span></span>{% endif %}
+  </div>
+  {% if window.state == 'open' %}
+  <a class="btn btn-primary btn-lg" href="{{ url_for('student.presensi') }}">{{ icon('check-circle', 20) }}Isi presensi sekarang</a>
+  {% elif window.state == 'after' %}
+  <div class="alert alert-warn">{{ icon('alert', 18) }}<span>Anda belum presensi hari ini. Hubungi pengurus kelas bila ada alasan kehadiran.</span></div>
+  {% endif %}
+  {% endif %}
+</section>
+
+<section class="card" aria-labelledby="rekap">
+  <div class="card-head"><h2 id="rekap">Rekap bulan ini</h2><span class="muted small">{{ summary.effective_days }} hari efektif</span></div>
+  <div class="tiles">
+    {% for k in STATUS_ORDER %}<div class="tile {{ k|lower }}"><b>{{ summary.counts[k] }}</b><span>{{ STATUS_LABELS[k] }}</span></div>{% endfor %}
+  </div>
+  <p class="muted small m-0">
+    {% if summary.pct is not none %}Kehadiran {{ summary.pct }}%{% else %}Belum ada data presensi bulan ini{% endif %}{% if summary.belum %} · {{ summary.belum }} hari belum tercatat{% endif %}
+  </p>
+</section>
+
+<section class="card" aria-labelledby="riw">
+  <div class="card-head"><h2 id="riw">Riwayat terbaru</h2><a class="small" href="{{ url_for('student.riwayat') }}">Lihat semua</a></div>
+  {% if recent %}
+  <ul class="history-list">
+    {% for r in recent %}
+    <li><span class="when">{{ r['att_date']|hari_bulan }}</span><span>{{ badge(r['status']) }}{% if r['corrected'] %}<span class="tag">dikoreksi</span>{% endif %}</span>
+      <span class="meta">{{ r['submitted_at']|jam }} WIB{% if r['note'] %} · {{ r['note'] }}{% endif %}</span></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty"><strong>Belum ada riwayat</strong>Presensi yang Anda kirim akan muncul di sini.</div>
+  {% endif %}
+</section>
+{% endblock %}

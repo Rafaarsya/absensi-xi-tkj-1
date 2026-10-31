@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}Kata sandi sementara{% endblock %}
+{% block main_class %}container narrow{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>{{ 'Siswa ditambahkan' if created else 'Kata sandi direset' }}</h1><p>{{ student['full_name'] }}</p></div></div>
+<section class="card">
+  <p>Berikan kata sandi sementara ini kepada siswa. Siswa wajib menggantinya saat login pertama.</p>
+  <p><span class="credential">{{ temp_password }}</span></p>
+  <div class="alert alert-warn">{{ icon('alert', 18) }}<span>Catat sekarang. Kata sandi ini <strong>tidak akan ditampilkan lagi</strong>; bila hilang, lakukan reset sandi ulang.</span></div>
+  <div class="form-actions no-print">
+    <button class="btn btn-secondary" type="button" data-print>{{ icon('printer', 16) }}Cetak</button>
+    <a class="btn btn-primary" href="{{ url_for('admin.students') }}">Kembali ke daftar siswa</a>
+  </div>
+</section>
+{% endblock %}

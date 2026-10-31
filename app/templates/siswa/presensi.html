@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, csrf %}
+{% block title %}Presensi hari ini{% endblock %}
+{% block main_class %}container narrow{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Presensi hari ini</h1><p>{{ today|tgl }}</p></div></div>
+
+{% if error %}
+<div class="alert alert-error mb-1" role="alert">{{ icon('alert', 18) }}<span>{{ error }}</span></div>
+{% endif %}
+
+{% if window.state != 'open' %}
+<div class="card">
+  <div class="empty"><strong>Presensi belum bisa diisi</strong>{{ window.message }}</div>
+  <p class="center m-0"><a class="btn btn-secondary" href="{{ url_for('student.dashboard') }}">Kembali ke beranda</a></p>
+</div>
+{% else %}
+<div class="window-line mt-0"><span class="window-msg">{{ icon('clock', 16) }}<span>{{ window.message }}</span></span>
+  <span>Sisa <span class="countdown" data-countdown="{{ window.seconds_left }}">--:--</span></span></div>
+
+<form id="presensi-form" class="card" method="post" action="{{ url_for('student.presensi') }}" data-geo="{{ 1 if geo else 0 }}">
+  {{ csrf() }}
+  <input type="hidden" name="lat" value=""><input type="hidden" name="lng" value="">
+  <fieldset>
+    <legend>Pilih status kehadiran Anda</legend>
+    <div class="choice-group">
+      <label class="choice"><input type="radio" name="status" value="H" required {% if form.status == 'H' %}checked{% endif %}><span class="dot"></span>
+        <span><strong>Hadir</strong><small>Saya hadir di sekolah hari ini.</small></span></label>
+      <label class="choice"><input type="radio" name="status" value="I" {% if form.status == 'I' %}checked{% endif %}><span class="dot"></span>
+        <span><strong>Izin</strong><small>Tidak hadir karena keperluan penting. Keterangan wajib.</small></span></label>
+      <label class="choice"><input type="radio" name="status" value="S" {% if form.status == 'S' %}checked{% endif %}><span class="dot"></span>
+        <span><strong>Sakit</strong><small>Tidak hadir karena kondisi kesehatan. Keterangan wajib.</small></span></label>
+    </div>
+  </fieldset>
+
+  <div class="field" id="note-field">
+    <label for="f-note">Keterangan <span class="muted small">(wajib untuk Izin atau Sakit)</span></label>
+    <textarea class="textarea" id="f-note" name="note" maxlength="200" rows="3">{{ form.note }}</textarea>
+  </div>
+
+  {% if geo %}
+  <p class="help mb-1" id="geo-hint">{{ icon('map-pin', 14) }} Untuk status Hadir, browser akan meminta izin lokasi dan server memeriksa apakah Anda berada di area sekolah. Lokasi tidak disimpan, hanya hasil pemeriksaannya.</p>
+  {% endif %}
+  <p id="geo-msg" class="error-text" role="status"></p>
+
+  <button class="btn btn-primary btn-lg" id="submit-btn" type="submit">{{ icon('check', 20) }}Kirim presensi</button>
+  <p class="help mt-075">Presensi hanya bisa dikirim satu kali per hari. Koreksi dilakukan oleh wali kelas.</p>
+</form>
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if window.state == 'open' %}<script src="{{ url_for('static', filename='js/presensi.js') }}" defer></script>{% endif %}{% endblock %}
